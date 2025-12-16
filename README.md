@@ -1,6 +1,3 @@
-
-# ecommerce-flask
-
 # E-Commerce Platform
 
 Full-stack online shopping platform
