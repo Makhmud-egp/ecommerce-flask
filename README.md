@@ -1,6 +1,6 @@
-<<<<<<< HEAD
+
 # ecommerce-flask
-=======
+
 # E-Commerce Platform
 
 Full-stack online shopping platform
@@ -13,4 +13,4 @@ Full-stack online shopping platform
 
 ## Status
 🚧 In Development
->>>>>>> d2b588c (Initial project structure)
+
