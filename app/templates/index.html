@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Home - E-Commerce Shop{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 3rem 0;">
+    <h1>Welcome to Our Shop! 🛍️</h1>
+    <p style="font-size: 1.2rem; color: #666; margin: 1rem 0;">
+        Discover amazing products at great prices
+    </p>
+    <a href="/products/" class="btn btn-primary" style="font-size: 1.2rem;">
+        Start Shopping
+    </a>
+</div>
+
+<div style="margin-top: 3rem;">
+    <h2>Featured Categories</h2>
+    <div class="products-grid">
+        {% for category in categories %}
+        <div class="product-card">
+            <h3>{{ category.name }}</h3>
+            <p>{{ category.description }}</p>
+            <a href="/products?category={{ category.id }}" class="btn btn-primary">
+                View Products
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

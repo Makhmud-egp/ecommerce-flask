@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart{% endblock %}
+
+{% block content %}
+<h1>Shopping Cart 🛒</h1>
+
+<div id="cartItems" style="margin-top: 2rem;">
+    <!-- Cart items will be loaded here -->
+</div>
+
+<div class="cart-total" id="cartTotal">
+    <!-- Total will be shown here -->
+</div>
+
+<div style="text-align: right; margin-top: 2rem;">
+    <a href="/products" class="btn">Continue Shopping</a>
+    <!--    <button id="checkoutBtn" class="btn btn-success" style="font-size: 1.2rem;">-->
+    <!--        Proceed to Checkout →-->
+    <!--    </button>-->
+    <button id="checkoutBtn" class="btn btn-success" style="font-size: 1.2rem;"
+            onclick="window.location.href='/orders/checkout'">
+        Proceed to Checkout →
+    </button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    <!--    // Load cart-->
+    <!--    async function loadCart() {-->
+    <!--        const response = await fetch('/cart');-->
+    <!--        const data = await response.json();-->
+
+    <!--        const cartItems = document.getElementById('cartItems');-->
+    <!--        const cartTotal = document.getElementById('cartTotal');-->
+
+    <!--        if (data.items.length === 0) {-->
+    <!--            cartItems.innerHTML = '<p style="text-align: center; color: #999; padding: 3rem;">Your cart is empty</p>';-->
+    <!--            cartTotal.innerHTML = '';-->
+    <!--            document.getElementById('checkoutBtn').style.display = 'none';-->
+    <!--            return;-->
+    <!--        }-->
+
+    <!--        cartItems.innerHTML = data.items.map(item => `-->
+    <!--            <div class="cart-item">-->
+    <!--                <div>-->
+    <!--                    <h3>${item.product.name}</h3>-->
+    <!--                    <p style="color: #666;">$${item.product.price.toFixed(2)} each</p>-->
+    <!--                </div>-->
+    <!--                <div style="display: flex; align-items: center; gap: 1rem;">-->
+    <!--                    <input type="number" value="${item.quantity}" min="1"-->
+    <!--                           onchange="updateQuantity(${item.id}, this.value)"-->
+    <!--                           style="width: 80px; padding: 0.5rem;">-->
+    <!--                    <p style="font-weight: bold;">$${item.subtotal.toFixed(2)}</p>-->
+    <!--                    <button onclick="removeItem(${item.id})" class="btn btn-danger">Remove</button>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        `).join('');-->
+
+    <!--        cartTotal.innerHTML = `Total: $${data.total.toFixed(2)}`;-->
+    <!--    }-->
+        // Load cart
+    async function loadCart() {
+        const response = await fetch('/cart/', {
+            headers: {
+                'Accept': 'application/json'  // ADD THIS to get JSON response
+            }
+        });
+        const data = await response.json();
+
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+
+        if (data.items.length === 0) {
+            cartItems.innerHTML = '<p style="text-align: center; color: #999; padding: 3rem;">Your cart is empty</p>';
+            cartTotal.innerHTML = '';
+            document.getElementById('checkoutBtn').style.display = 'none';
+            return;
+        }
+
+        cartItems.innerHTML = data.items.map(item => `
+            <div class="cart-item">
+                <div>
+                    <h3>${item.product.name}</h3>
+                    <p style="color: #666;">$${item.product.price} each</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <input type="number" value="${item.quantity}" min="1"
+                           onchange="updateQuantity(${item.id}, this.value)"
+                           style="width: 80px; padding: 0.5rem;">
+                    <p style="font-weight: bold;">$${item.subtotal.toFixed(2)}</p>
+                    <button onclick="removeItem(${item.id})" class="btn btn-danger">Remove</button>
+                </div>
+            </div>
+        `).join('');
+
+        cartTotal.innerHTML = `<h2>Total: $${data.total.toFixed(2)}</h2>`;
+    }
+        // Update quantity
+        async function updateQuantity(itemId, quantity) {
+            await fetch(`/cart/${itemId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity: parseInt(quantity) })
+            });
+            loadCart();
+        }
+
+        // Remove item
+        async function removeItem(itemId) {
+            if (confirm('Remove this item?')) {
+                await fetch(`/cart/${itemId}`, { method: 'DELETE' });
+                loadCart();
+            }
+        }
+
+        // Checkout
+        document.getElementById('checkoutBtn').addEventListener('click', () => {
+            window.location.href = '/checkout';
+        });
+
+        // Load on page load
+        loadCart();
+</script>
+{% endblock %}

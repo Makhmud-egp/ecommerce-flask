@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<h1>My Orders 📦</h1>
+
+<div id="ordersList" style="margin-top: 2rem;">
+    <!-- Orders will load here -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadOrders() {
+        const response = await fetch('/orders/', {
+            headers:{
+                'Accept': 'application/json'
+            }
+        });
+        const orders = await response.json();
+
+        const ordersList = document.getElementById('ordersList');
+
+        if (orders.length === 0) {
+            ordersList.innerHTML = '<p style="text-align: center; color: #999;">No orders yet</p>';
+            return;
+        }
+
+        ordersList.innerHTML = orders.map(order => `
+            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <h3>Order #${order.id}</h3>
+                        <p style="color: #666;">${new Date(order.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                        <span style="background: ${getStatusColor(order.status)}; color: white; padding: 0.5rem 1rem; border-radius: 4px;">
+                            ${order.status.toUpperCase()}
+                        </span>
+                    </div>
+                </div>
+
+                ${order.items.map(item => `
+                    <div style="padding: 0.5rem 0; border-top: 1px solid #eee;">
+                        ${item.product_name} × ${item.quantity} = $${item.subtotal.toFixed(2)}
+                    </div>
+                `).join('')}
+
+                <div style="text-align: right; margin-top: 1rem; font-size: 1.2rem; font-weight: bold;">
+                    Total: $${order.total_amount.toFixed(2)}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'pending': '#f39c12',
+            'paid': '#27ae60',
+            'processing': '#3498db',
+            'shipped': '#9b59b6',
+            'delivered': '#2ecc71',
+            'cancelled': '#e74c3c'
+        };
+        return colors[status] || '#95a5a6';
+    }
+
+    loadOrders();
+</script>
+{% endblock %}

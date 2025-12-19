@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<h1>Checkout 🛒</h1>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 2rem;">
+    <!-- Left: Shipping Form -->
+    <div>
+        <h2>Shipping Information</h2>
+
+        <form id="checkoutForm">
+            <div class="form-group">
+                <label>Full Name:</label>
+                <input type="text" name="full_name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Address Line 1:</label>
+                <input type="text" name="address1" required>
+            </div>
+
+            <div class="form-group">
+                <label>Address Line 2:</label>
+                <input type="text" name="address2">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>City:</label>
+                    <input type="text" name="city" required>
+                </div>
+
+                <div class="form-group">
+                    <label>ZIP Code:</label>
+                    <input type="text" name="zip" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Country:</label>
+                <input type="text" name="country" value="USA" required>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right: Order Summary -->
+    <div>
+        <h2>Order Summary</h2>
+
+        <div id="orderSummary" style="margin-top: 1rem;">
+            <!-- Cart items will load here -->
+        </div>
+
+        <div class="cart-total" id="orderTotal" style="margin-top: 2rem;">
+            <!-- Total will show here -->
+        </div>
+
+        <button id="proceedToPayment" class="btn btn-success" style="width: 100%; margin-top: 2rem; font-size: 1.2rem;">
+            Proceed to Payment →
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    <!--// Load cart summary-->
+    <!--async function loadCartSummary() {-->
+    <!--    const response = await fetch('/cart/');-->
+    <!--    const data = await response.json();-->
+
+    <!--    if (data.items.length === 0) {-->
+    <!--        alert('Your cart is empty!');-->
+    <!--        window.location.href = '/products';-->
+    <!--        return;-->
+    <!--    }-->
+
+    <!--    const summary = document.getElementById('orderSummary');-->
+    <!--    summary.innerHTML = data.items.map(item => `-->
+    <!--        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee;">-->
+    <!--            <div>-->
+    <!--                <strong>${item.product.name}</strong>-->
+    <!--                <br>-->
+    <!--                <small>Qty: ${item.quantity} × $${item.product.price.toFixed(2)}</small>-->
+    <!--            </div>-->
+    <!--            <div>$${item.subtotal.toFixed(2)}</div>-->
+    <!--        </div>-->
+    <!--    `).join('');-->
+
+    <!--    document.getElementById('orderTotal').innerHTML = `-->
+    <!--        <strong>Total: $${data.total.toFixed(2)}</strong>-->
+    <!--    `;-->
+    <!--}-->
+    // Load cart summary
+    async function loadCartSummary() {
+        const response = await fetch('/cart/', {
+            headers: {
+                'Accept': 'application/json'  // ADD THIS
+            }
+        });
+        const data = await response.json();
+
+        if (data.items.length === 0) {
+            alert('Your cart is empty!');
+            window.location.href = '/products';
+            return;
+        }
+
+        const summary = document.getElementById('orderSummary');
+        summary.innerHTML = data.items.map(item => `
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                <div>
+                    <strong>${item.product.name}</strong>
+                    <br>
+                    <small>Qty: ${item.quantity} × $${parseFloat(item.product.price).toFixed(2)}</small>
+                </div>
+                <div>$${item.subtotal.toFixed(2)}</div>
+            </div>
+        `).join('');
+
+        document.getElementById('orderTotal').innerHTML = `
+            <strong>Total: $${data.total.toFixed(2)}</strong>
+        `;
+    }
+    // Proceed to payment
+    document.getElementById('proceedToPayment').addEventListener('click', async () => {
+        const form = document.getElementById('checkoutForm');
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = new FormData(form);
+        const shippingData = Object.fromEntries(formData);
+
+        // Create shipping address string
+        const shippingAddress = `${shippingData.full_name}, ${shippingData.address1}, ${shippingData.address2 || ''}, ${shippingData.city}, ${shippingData.zip}, ${shippingData.country}`;
+
+        // Create order
+        const response = await fetch('/orders/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ shipping_address: shippingAddress })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Redirect to payment page with order ID
+            window.location.href = `/payment/${data.order_id}?client_secret=${data.client_secret}`;
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    });
+
+    // Load on page load
+    loadCartSummary();
+</script>
+{% endblock %}

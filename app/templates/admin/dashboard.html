@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h1>Admin Dashboard 👨‍💼</h1>
+
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; margin: 2rem 0;">
+    <!-- Statistics Cards -->
+    <div style="background: #3498db; color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+        <h2 id="totalOrders">0</h2>
+        <p>Total Orders</p>
+    </div>
+
+    <div style="background: #27ae60; color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+        <h2 id="totalRevenue">$0</h2>
+        <p>Total Revenue</p>
+    </div>
+
+    <div style="background: #f39c12; color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+        <h2 id="totalProducts">0</h2>
+        <p>Total Products</p>
+    </div>
+
+    <div style="background: #9b59b6; color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+        <h2 id="totalUsers">0</h2>
+        <p>Total Users</p>
+    </div>
+</div>
+
+<div style="margin-top: 3rem;">
+    <h2>Quick Actions</h2>
+    <div style="margin-top: 1rem;">
+        <a href="/admin/products" class="btn btn-primary">Manage Products</a>
+        <a href="/admin/orders" class="btn btn-primary">Manage Orders</a>
+        <a href="/admin/categories" class="btn btn-primary">Manage Categories</a>
+    </div>
+</div>
+
+<div style="margin-top: 3rem;">
+    <h2>Recent Orders</h2>
+    <div id="recentOrders" style="margin-top: 1rem;">
+        <!-- Recent orders will load here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadDashboard() {
+    try {
+        // Load stats with JSON header
+        const statsResponse = await fetch('/admin/stats', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        const stats = await statsResponse.json();
+
+        document.getElementById('totalOrders').textContent = stats.total_orders;
+        document.getElementById('totalRevenue').textContent = '$' + stats.total_revenue.toFixed(2);
+        document.getElementById('totalProducts').textContent = stats.total_products;
+        document.getElementById('totalUsers').textContent = stats.total_users;
+
+        // Load recent orders with limit parameter (automatically triggers JSON response)
+        const ordersResponse = await fetch('/admin/orders?limit=5', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        const orders = await ordersResponse.json();
+
+        const recentOrders = document.getElementById('recentOrders');
+
+        if (orders.length === 0) {
+            recentOrders.innerHTML = '<p style="color: #999;">No orders yet</p>';
+            return;
+        }
+
+        recentOrders.innerHTML = orders.map(order => `
+            <div style="border: 1px solid #ddd; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                <strong>Order #${order.id}</strong> -
+                $${parseFloat(order.total_amount).toFixed(2)} -
+                <span style="color: ${getStatusColor(order.status)}">${order.status}</span>
+                <br>
+                <small>${new Date(order.created_at).toLocaleString()}</small>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'pending': '#f39c12',
+        'paid': '#27ae60',
+        'processing': '#3498db',
+        'shipped': '#9b59b6',
+        'delivered': '#2ecc71',
+        'cancelled': '#e74c3c'
+    };
+    return colors[status] || '#95a5a6';
+}
+
+loadDashboard();
+</script>
+{% endblock %}

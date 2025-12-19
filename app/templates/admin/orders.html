@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Orders{% endblock %}
+
+{% block content %}
+<h1>Manage Orders 📦</h1>
+
+<div style="margin: 2rem 0;">
+    <button onclick="filterOrders('all')" class="btn">All</button>
+    <button onclick="filterOrders('pending')" class="btn">Pending</button>
+    <button onclick="filterOrders('paid')" class="btn btn-success">Paid</button>
+    <button onclick="filterOrders('processing')" class="btn btn-primary">Processing</button>
+    <button onclick="filterOrders('shipped')" class="btn">Shipped</button>
+</div>
+
+<div id="ordersList">
+    <p style="text-align: center; color: #999;">Loading orders...</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allOrders = [];
+
+async function loadOrders() {
+    try {
+        const response = await fetch('/admin/orders', {
+            headers: {
+                'Accept': 'application/json'  // ADD THIS
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load orders');
+        }
+
+        allOrders = await response.json();
+        console.log('Loaded orders:', allOrders);  // Debug
+        displayOrders(allOrders);
+    } catch (error) {
+        console.error('Error loading orders:', error);
+        document.getElementById('ordersList').innerHTML =
+            '<p style="text-align: center; color: red;">Error loading orders</p>';
+    }
+}
+
+function displayOrders(orders) {
+    const ordersList = document.getElementById('ordersList');
+
+    if (orders.length === 0) {
+        ordersList.innerHTML = '<p style="text-align: center; color: #999;">No orders found</p>';
+        return;
+    }
+
+    ordersList.innerHTML = orders.map(order => `
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; background: white;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3>Order #${order.id}</h3>
+                    <p style="color: #666;">User ID: ${order.user_id} | ${new Date(order.created_at).toLocaleString()}</p>
+                    <p><strong>Shipping:</strong> ${order.shipping_address}</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 1.3rem; font-weight: bold;">$${parseFloat(order.total_amount).toFixed(2)}</p>
+                    <select onchange="updateOrderStatus(${order.id}, this.value)" style="padding: 0.5rem; margin-top: 0.5rem;">
+                        <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="paid" ${order.status === 'paid' ? 'selected' : ''}>Paid</option>
+                        <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                <h4>Items:</h4>
+                ${order.items.map(item => `
+                    <div style="padding: 0.5rem 0;">
+                        ${item.product_name} × ${item.quantity} = $${parseFloat(item.subtotal).toFixed(2)}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+async function updateOrderStatus(orderId, status) {
+    try {
+        const response = await fetch(`/admin/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update status');
+        }
+
+        alert('Order status updated!');
+
+        // Update the status in the local array
+        const order = allOrders.find(o => o.id === orderId);
+        if (order) {
+            order.status = status;
+        }
+    } catch (error) {
+        console.error('Error updating status:', error);
+        alert('Error updating order status');
+    }
+}
+
+function filterOrders(status) {
+    if (status === 'all') {
+        displayOrders(allOrders);
+    } else {
+        const filtered = allOrders.filter(o => o.status === status);
+        displayOrders(filtered);
+    }
+}
+
+loadOrders();
+</script>
+{% endblock %}
