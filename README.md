@@ -402,6 +402,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - LinkedIn: [Makhmud Djalolov](https://www.linkedin.com/in/makhmud-djalolov-8928b332b/)
 - Email: [osonpy@gmail.com](mailto:osonpy@gmail.com)
 - Portfolio: [makhmud-egp.github.io](https://makhmud-egp.github.io)
+- Telegram: [@osonpython](https://t.me/osonpython)
 
 ---
 
