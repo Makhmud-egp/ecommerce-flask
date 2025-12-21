@@ -28,7 +28,8 @@ class Product(db.Model):
             'stock_quantity': self.stock_quantity,
             'image_url': self.image_url,
             'is_active': self.is_active,
-            'category': self.category.name if self.category else None
+            'category': self.category.name if self.category else None,
+            'category_id': self.category_id
         }
 
     def __repr__(self):
