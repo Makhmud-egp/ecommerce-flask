@@ -122,7 +122,9 @@ ZIP: 12345 (yoki istalgan 5 raqam)
 ## 📸 Screenshots
 
 ### Homepage
-![Homepage](screenshots/homepage.png)
+![Homepage](https://t.me/osonpython_projects/3)
+
+
 *Main landing page with featured products*
 
 ### Product Catalog
