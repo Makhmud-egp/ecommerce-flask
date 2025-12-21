@@ -122,7 +122,9 @@ ZIP: 12345 (yoki istalgan 5 raqam)
 ## 📸 Screenshots
 
 ### Homepage
-![Homepage](screenshots/homepage.png)
+![Homepage](<img width="1920" height="1080" alt="image_2025-12-21_11-38-24" src="https://github.com/user-attachments/assets/24625fa7-82bf-4c4a-94bc-31a340f9f1da" />)
+
+
 *Main landing page with featured products*
 
 ### Product Catalog
