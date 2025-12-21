@@ -74,8 +74,8 @@ Bu loyiha **portfolio project** sifatida yaratilgan va backend development, paym
 - Password: `test123`
 
 **Admin User:**
-- Email: `admin@example.com`
-- Password: `admin123`
+- Email: `admin@shop.com`
+- Password: `Admin123!`
 
 ### Test Payment:
 
