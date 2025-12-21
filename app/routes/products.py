@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
+from flask_login import current_user
+
 from app import db
 from app.models import Product, Category
 from app.utils.decorators import admin_required
@@ -37,7 +39,7 @@ def get_products():
 def get_product(id):
     """Get single product detail page"""
     product = Product.query.get_or_404(id)
-    return render_template('product_detail.html', product=product)
+    return render_template('product_detail.html', product=product, current_user=current_user)
 
 
 @product_bp.route('/', methods=['POST'])
